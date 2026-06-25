@@ -3,3 +3,4 @@
 /.shards/
 *.dwarf
 .crystal-cache/
+homebrew-swarmy/
