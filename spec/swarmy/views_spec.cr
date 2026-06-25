@@ -54,7 +54,8 @@ describe Swarmy::Views do
       tasks = [
         Swarmy::Task.new("t1", "api.1", "node-1", "Shutdown", "Failed", "no such image"),
       ]
-      detail = Swarmy::Views.service_detail(svc, tasks)
+      running = tasks.select { |t| t.desired_state.downcase == "running" && !t.failed? }
+      detail = Swarmy::Views.service_detail(svc, tasks, running, 0)
       detail.should contain("Service: api")
       detail.should contain("Why it is not running")
       detail.should contain("no such image")
@@ -63,7 +64,8 @@ describe Swarmy::Views do
     it "handles a healthy service with no failures" do
       svc = Swarmy::Service.new("id", "api", "replicated", "api:latest", "", 1, 1)
       tasks = [Swarmy::Task.new("t1", "api.1", "node-1", "Running", "Running", "")]
-      Swarmy::Views.service_detail(svc, tasks).should_not contain("Why it is not running")
+      running = tasks.select { |t| t.desired_state.downcase == "running" && !t.failed? }
+      Swarmy::Views.service_detail(svc, tasks, running, 0).should_not contain("Why it is not running")
     end
   end
 end
