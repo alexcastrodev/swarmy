@@ -1,8 +1,9 @@
-# swarmy
+![welcome](./.screenshots/welcome.png)
 
 swarmy is a command-line tool (Terminal UI) that allows you to manage Docker swarm services and containers easily.
 
-![welcome](./.screenshots/welcome.png)
+
+![demo](./.screenshots/demo.gif)
 
 # Usage
 
