@@ -5,12 +5,25 @@ swarmy is a command-line tool (Terminal UI) that allows you to manage Docker swa
 
 ![demo](./.screenshots/demo.gif)
 
-# Usage
+## Installation
 
-## Show all services
+### Homebrew
 
 ```bash
-swarmy services
+brew install alexcastrodev/swarmy/swarmy
+```
+
+### Script
+
+```bash
+curl -sSL https://raw.githubusercontent.com/alexcastrodev/swarmy/main/install.sh | bash
+```
+
+
+# Usage
+
+```bash
+swarmy
 ```
 
 - Show all service
