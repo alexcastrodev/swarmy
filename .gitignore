@@ -1,0 +1,5 @@
+/bin/swarmy
+/lib/
+/.shards/
+*.dwarf
+.crystal-cache/

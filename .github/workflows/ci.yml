@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  spec:
+    name: spec (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Crystal (Linux)
+        if: runner.os == 'Linux'
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install Crystal (macOS)
+        if: runner.os == 'macOS'
+        run: brew install crystal
+
+      - name: Install dependencies
+        run: shards install --skip-postinstall
+
+      - name: Run specs
+        run: crystal spec
