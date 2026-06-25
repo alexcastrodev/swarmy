@@ -101,8 +101,10 @@ module Swarmy
           task_cursor = (task_cursor - 1).clamp(0, {running.size - 1, 0}.max) unless running.empty?
         when :down
           task_cursor = (task_cursor + 1).clamp(0, running.size - 1) unless running.empty?
-        when :e, :enter
+        when :enter, :e
           exec_into_task(running[task_cursor]) unless running.empty?
+        when :l
+          show_logs(running[task_cursor]) unless running.empty?
           break if @quit
         when :b, :escape then break
         when :quit
@@ -113,12 +115,38 @@ module Swarmy
     end
 
     private def detail_footer(no_tasks : Bool) : String
-      keys = no_tasks ? {} of String => String : {"↑/↓" => "move", "e" => "exec"}
+      keys = no_tasks ? {} of String => String : {"↑/↓" => "move", "↵" => "exec", "l" => "logs"}
       keys["b/esc"] = "back"
       parts = keys.map do |k, v|
         Tui::Colors.paint(k, Theme::KEY) + " " + Tui::Colors.paint(v, Theme::HINT)
       end
       parts.join(Tui::Colors.paint("   ", Theme::HINT))
+    end
+
+    private def show_logs(task : Task)
+      container =
+        begin
+          @docker.container_id(task.id)
+        rescue ex : Docker::Error
+          @screen.clear
+          puts Tui::Colors.paint("Could not find container: #{ex.message}", Theme::FAILED)
+          @screen.read_key
+          return
+        end
+
+      if container.empty?
+        @screen.clear
+        puts Tui::Colors.paint("No container found for this task.", Theme::FAILED)
+        @screen.read_key
+        return
+      end
+
+      @screen.suspend do
+        Process.run("docker", ["logs", "--tail", "100", "--follow", container],
+          input: Process::Redirect::Inherit,
+          output: Process::Redirect::Inherit,
+          error: Process::Redirect::Inherit)
+      end
     end
 
     private def exec_into_task(task : Task)

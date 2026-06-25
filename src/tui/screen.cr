@@ -77,7 +77,12 @@ module Tui
       show_cursor
       clear
       STDIN.cooked do
-        yield
+        Signal::INT.trap { }
+        begin
+          yield
+        ensure
+          Signal::INT.reset
+        end
       end
       enable_opost
       hide_cursor
@@ -104,7 +109,7 @@ module Tui
       when 'k' then :up
       when 'j' then :down
       when 'h' then :left
-      when 'l' then :right
+      when 'l' then :l
       when 'q' then :q
       when 'r' then :r
       when 'b' then :b
