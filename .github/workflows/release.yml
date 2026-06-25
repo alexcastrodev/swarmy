@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: darwin-arm64
+          - os: macos-13
+            target: darwin-amd64
+          - os: ubuntu-latest
+            target: linux-amd64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Crystal (Linux)
+        if: runner.os == 'Linux'
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install Crystal (macOS)
+        if: runner.os == 'macOS'
+        run: brew install crystal
+
+      - name: Build
+        run: make build
+
+      - name: Package
+        run: |
+          tar czf swarmy-${{ matrix.target }}.tar.gz -C bin swarmy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swarmy-${{ matrix.target }}
+          path: swarmy-${{ matrix.target }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: swarmy-*.tar.gz
+          generate_release_notes: true
