@@ -15,13 +15,16 @@ all: build
 
 build: $(BIN)
 
-$(BIN): $(SOURCES)
+$(BIN): $(SOURCES) | bin
 	$(CRYSTAL) build $(SRC) --release $(LINK_FLAGS) -o $(BIN)
 
 dev: $(DEV_BIN)
 
-$(DEV_BIN): $(SOURCES)
+$(DEV_BIN): $(SOURCES) | bin
 	$(CRYSTAL) build $(SRC) $(LINK_FLAGS) -o $(DEV_BIN)
+
+bin:
+	mkdir -p bin
 
 run: dev
 	./$(DEV_BIN)
