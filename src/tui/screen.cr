@@ -5,6 +5,8 @@ module Tui
     SHOW_CURSOR = "\e[?25h"
     CTRL_C      = '\u0003'
 
+    @@resized = false
+
     {% if flag?(:darwin) %}
       TIOCGWINSZ = 0x40087468_u64
     {% else %}
@@ -61,9 +63,11 @@ module Tui
         STDIN.raw do
           enable_opost
           hide_cursor
+          Signal::WINCH.trap { @@resized = true }
           begin
             yield
           ensure
+            Signal::WINCH.reset
             show_cursor
             clear
           end
@@ -96,7 +100,22 @@ module Tui
     end
 
     def read_key : Symbol
-      c = STDIN.read_char
+      c = nil
+      loop do
+        if @@resized
+          @@resized = false
+          return :resize
+        end
+        STDIN.read_timeout = 100.milliseconds
+        begin
+          c = STDIN.read_char
+          break
+        rescue IO::TimeoutError
+          next
+        ensure
+          STDIN.read_timeout = nil
+        end
+      end
       return :quit if c.nil?
 
       case c
