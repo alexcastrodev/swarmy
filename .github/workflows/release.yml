@@ -18,6 +18,8 @@ jobs:
             target: darwin-arm64
           - os: ubuntu-latest
             target: linux-amd64
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -74,6 +76,7 @@ jobs:
         run: |
           echo "darwin_arm64=$(sha256sum swarmy-darwin-arm64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           echo "linux_amd64=$(sha256sum swarmy-linux-amd64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$(sha256sum swarmy-linux-arm64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:
@@ -87,6 +90,7 @@ jobs:
           sed -i "s/version \".*\"/version \"${VERSION}\"/" "$F"
           sed -i "/darwin-arm64/{ n; s/sha256 \".*\"/sha256 \"${{ steps.sha.outputs.darwin_arm64 }}\"/ }" "$F"
           sed -i "/linux-amd64/{ n; s/sha256 \".*\"/sha256 \"${{ steps.sha.outputs.linux_amd64 }}\"/ }" "$F"
+          sed -i "/linux-arm64/{ n; s/sha256 \".*\"/sha256 \"${{ steps.sha.outputs.linux_arm64 }}\"/ }" "$F"
 
       - name: Push
         run: |
